@@ -5,7 +5,7 @@ var tutor = require('tutor');
 
 var config = {
     server: 'irc.freenode.org',
-    botName: 'Erebot',
+    botName: 'Helibot',
     channels: [ '#mtgsapo' ]
 };
 
@@ -20,17 +20,7 @@ var say = function (msg, from, to) {
     bot.say(dest, msg);
 };
 
-var getBooster = function (setName) {
-    say('Not implemented yet.');
-    return;
-    tutor.set(setName, function (err, cards) {
-        if (err || cards.length < 2) { // somehow this returns cards = [null] lulz
-            say('Wrong set name?');
-            return;
-        }
-        // TODO
-    });
-};
+var sets = {};
 
 var parseCommand = function (str, from, to) {
     var cmd = {};
@@ -45,30 +35,96 @@ var parseCommand = function (str, from, to) {
     return cmd.major ? cmd : false;
 };
 
+var pickCards = function ( cardList , n ) {
+    n = n || 1;
+
+    var idx;
+    var idxs = [ ];
+    var cards = [ ];
+    var l = cardList.length;
+
+    for ( var i = 0; i < n; i++) {
+        idx = Math.floor( Math.random( ) * l-- );
+
+        for ( var j = 0, k = idxs.length; j < k; j++ ) {
+            if ( idxs[ j ] <= idx ) { idx++; }
+        }
+
+        idxs.push( idx );
+        cards.push( cardList[ idx ] );
+    }
+
+    return cards;
+};
+
+var openBooster = function ( setName ) {
+    var cards = sets[ setName ];
+
+    var token  = Math.random( ) < 0.5;
+    var foil   = Math.random( ) < 0.7;
+    var mythic = Math.random( ) < 0.8;
+
+    say( '!' + pickCards( cards.Land )[ 0 ].name );
+
+    foil && say( 'foil: ' + pickCards( cards.cards )[ 0 ].name );
+
+    say( '!' + pickCards( cards[ mythic ? 'Mythic Rare' : 'Rare' ] )[ 0 ].name );
+
+    var U = pickCards( cards.Uncommon , 3 );
+    say( '!' + U[ 0 ].name );
+    say( '!' + U[ 1 ].name );
+    say( '!' + U[ 2 ].name );
+
+    var C = pickCards( cards.Common , foil ? 9 : 10 )
+    say( '!' + C[ 0 ].name );
+    say( '!' + C[ 1 ].name );
+    say( '!' + C[ 2 ].name );
+    say( '!' + C[ 3 ].name );
+    say( '!' + C[ 4 ].name );
+    say( '!' + C[ 5 ].name );
+    say( '!' + C[ 6 ].name );
+    say( '!' + C[ 7 ].name );
+    say( '!' + C[ 8 ].name );
+    !foil && say( '!' + C[ 9 ].name );
+};
+
+var setSet = function ( setName , cards ) {
+    sets[ setName ] = {
+        cards         : cards ,
+        'Mythic Rare' : [ ] ,
+        Rare          : [ ] ,
+        Uncommon      : [ ] ,
+        Common        : [ ] ,
+        Land          : [ ]
+    };
+
+    for ( var i = 0, l = cards.length; i < l; i++ ) {
+        sets[ setName ][ cards[ i ].rarity ].push( cards[ i ] );
+    }
+};
+
 var executeCmd = function (cmd) {
     switch (cmd.major) {
-        case 'card':
-            tutor.card(cmd.minor, function (err, card) {
-                if (err) {
-                    say('Card not found!');
-                    console.log(err);
-                } else {
-                    say(card.name);
-                    say(card.mana_cost);
-                    say(card.text);
-                    if (card.power !== undefined) {
-                        say(card.power + '/' + card.toughness);
-                    }
-                    say(card.devotion);
-                }
-            });
-            break;
         case 'booster':
             if (!cmd.minor) {
                 say('Usage: !booster <set name>');
-            } else {
-                getBooster(cmd.minor);
+
+                break;
             }
+
+            var setName = cmd.minor;
+
+            sets[ setName ] ? openBooster( setName ) : tutor.set( setName , function ( err , cards ) {
+                if ( err || cards.length < 2 ) { // somehow this returns cards = [null] lulz
+                    say( 'Wrong set name?' );
+
+                    return;
+                }
+
+                setSet( setName , cards );
+
+                openBooster( setName );
+            });
             break;
         default:
             say('Unknown command.');
