@@ -12,7 +12,7 @@ var config = {
 var bot = new irc.Client(
     config.server,
     config.botName,
-    { channels: config.channels }
+    { channels: config.channels , floodProtection : true }
 );
 
 var say = function (msg, from, to) {
