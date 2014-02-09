@@ -55,6 +55,7 @@ var pickCards = function ( cardList , n ) {
         }
 
         idxs.push( idx );
+        idxs.sort(function( _1 , _2 ) { return _2 < _1; });
         cardsArr.push( cardList[ idx ] );
     }
 
