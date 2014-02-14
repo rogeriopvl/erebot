@@ -1,13 +1,9 @@
 'use strict';
 
+var config = require('./config.json');
 var irc = require('irc');
 var tutor = require('tutor');
 
-var config = {
-    server: 'irc.freenode.org',
-    botName: 'Helibot',
-    channels: [ '#mtgsapo' ]
-};
 
 var bot = new irc.Client(
     config.server ,
