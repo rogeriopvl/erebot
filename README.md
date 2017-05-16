@@ -1,5 +1,7 @@
 # Erebot
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/rogeriopvl/erebot.svg)](https://greenkeeper.io/)
+
 ### IRC Bot with Magic The Gathering skills
 
 ### Install
